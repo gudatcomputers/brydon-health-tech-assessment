@@ -1,0 +1,23 @@
+{
+  "name": "brydon-health-tech-assessment",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/gudatcomputers/brydon-health-tech-assessment#readme",
+  "bugs": {
+    "url": "https://github.com/gudatcomputers/brydon-health-tech-assessment/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gudatcomputers/brydon-health-tech-assessment.git"
+  },
+  "license": "ISC",
+  "author": "gudatcomputers",
+  "type": "commonjs",
+  "scripts": {
+    "start:client": "cd client && npm run dev",
+    "start:server": "cd server && dotnet run",
+    "test": "",
+    "test:client": "",
+    "test:server": ""
+  }
+}
