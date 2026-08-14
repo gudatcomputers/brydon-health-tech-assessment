@@ -16,6 +16,8 @@
   "scripts": {
     "start:client": "cd client && npm run dev",
     "start:server": "cd server && dotnet run",
+    "start:db": "docker compose up -d postgres",
+    "stop:db": "docker compose down",
     "test": "",
     "test:client": "",
     "test:server": ""
