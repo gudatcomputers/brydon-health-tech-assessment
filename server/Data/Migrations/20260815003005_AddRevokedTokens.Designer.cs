@@ -3,6 +3,7 @@ using System;
 using BrydonServer.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BrydonServer.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260815003005_AddRevokedTokens")]
+    partial class AddRevokedTokens
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,6 +24,19 @@ namespace BrydonServer.Data.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("BrydonServer.Auth.RevokedToken", b =>
+                {
+                    b.Property<string>("Jti")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Jti");
+
+                    b.ToTable("revoked_tokens", (string)null);
+                });
 
             modelBuilder.Entity("BrydonServer.Auth.User", b =>
                 {
@@ -31,9 +47,6 @@ namespace BrydonServer.Data.Migrations
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<int>("TokenVersion")
-                        .HasColumnType("integer");
 
                     b.Property<string>("Username")
                         .IsRequired()

@@ -1,3 +1,6 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+
 namespace BrydonServer.Auth;
 
 public record LoginRequest(string Username, string Password);
@@ -21,5 +24,20 @@ public static class AuthEndpoints
         })
         .WithName("Login")
         .AllowAnonymous();
+
+        app.MapPost("/api/auth/logout", async (ClaimsPrincipal user, UserStore userStore) =>
+        {
+            var subject = user.FindFirstValue(JwtRegisteredClaimNames.Sub);
+            if (subject is null || !Guid.TryParse(subject, out var userId))
+            {
+                return Results.BadRequest();
+            }
+
+            await userStore.IncrementTokenVersionAsync(userId);
+
+            return Results.NoContent();
+        })
+        .WithName("Logout")
+        .RequireAuthorization();
     }
 }

@@ -9,7 +9,7 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "DB_HOST": "localhost",
-        "DB_PORT": "5432",
+        "DB_PORT": "5433",
         "DB_NAME": "brydon",
         "DB_USER": "brydon",
         "DB_PASSWORD": "brydon"
@@ -23,7 +23,7 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "DB_HOST": "localhost",
-        "DB_PORT": "5432",
+        "DB_PORT": "5433",
         "DB_NAME": "brydon",
         "DB_USER": "brydon",
         "DB_PASSWORD": "brydon"
