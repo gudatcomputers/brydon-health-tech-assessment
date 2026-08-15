@@ -1,6 +1,6 @@
 @BrydonServer_HostAddress = http://localhost:5251
 
-GET {{BrydonServer_HostAddress}}/weatherforecast/
+GET {{BrydonServer_HostAddress}}/health
 Accept: application/json
 
 ###
