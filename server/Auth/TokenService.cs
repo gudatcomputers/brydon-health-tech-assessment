@@ -1,12 +1,13 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using BrydonServer.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace BrydonServer.Auth;
 
-public class TokenService(IOptions<JwtOptions> jwtOptions)
+public class TokenService(IOptions<JwtOptions> jwtOptions, DeploymentOrigin deploymentOrigin)
 {
     private readonly JwtOptions _options = jwtOptions.Value;
 
@@ -26,8 +27,8 @@ public class TokenService(IOptions<JwtOptions> jwtOptions)
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
-            issuer: _options.Issuer,
-            audience: _options.Audience,
+            issuer: deploymentOrigin.BaseUrl,
+            audience: deploymentOrigin.BaseUrl,
             claims: claims,
             expires: expiresAt,
             signingCredentials: credentials);

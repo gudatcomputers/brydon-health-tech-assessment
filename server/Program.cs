@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using BrydonServer.Auth;
 using BrydonServer.Data;
+using BrydonServer.Hosting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -21,6 +22,9 @@ builder.Services
 
 var jwtOptions = builder.Configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>()
     ?? throw new InvalidOperationException($"Missing '{JwtOptions.SectionName}' configuration section.");
+
+var deploymentOrigin = DeploymentOrigin.FromConfiguration(builder.Configuration);
+builder.Services.AddSingleton(deploymentOrigin);
 
 var dbCredentials = DatabaseCredentials.FromConfiguration(builder.Configuration);
 
@@ -41,9 +45,9 @@ builder.Services
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
-            ValidIssuer = jwtOptions.Issuer,
+            ValidIssuer = deploymentOrigin.BaseUrl,
             ValidateAudience = true,
-            ValidAudience = jwtOptions.Audience,
+            ValidAudience = deploymentOrigin.BaseUrl,
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SigningKey)),
             ValidateLifetime = true,
@@ -77,12 +81,16 @@ builder.Services
 
 builder.Services.AddAuthorization();
 
+// In production, client and server share an origin behind a reverse proxy, so
+// this is mainly for local dev where the client runs on a different port. It
+// also always allows the deployment's own origin as a fallback.
 var clientOrigin = builder.Configuration["CLIENT_ORIGIN"] ?? "http://localhost:5173";
+var corsOrigins = new[] { clientOrigin, deploymentOrigin.BaseUrl }.Distinct().ToArray();
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("ClientApp", policy =>
-        policy.WithOrigins(clientOrigin).AllowAnyHeader().AllowAnyMethod());
+        policy.WithOrigins(corsOrigins).AllowAnyHeader().AllowAnyMethod());
 });
 
 var app = builder.Build();
