@@ -1,27 +1,27 @@
-import { useState, type FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../auth/useAuth'
+import { useState, type FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../auth/useAuth";
 
 export function LoginPage() {
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const { login } = useAuth()
-  const navigate = useNavigate()
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setError(null)
-    setIsSubmitting(true)
+    event.preventDefault();
+    setError(null);
+    setIsSubmitting(true);
 
     try {
-      await login(username, password)
-      navigate('/welcome', { replace: true })
+      await login(username, password);
+      navigate("/welcome", { replace: true });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong, please try again')
+      setError(err instanceof Error ? err.message : "Something went wrong, please try again");
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
   }
 
@@ -57,9 +57,9 @@ export function LoginPage() {
         )}
 
         <button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Signing in…' : 'Sign in'}
+          {isSubmitting ? "Signing in…" : "Sign in"}
         </button>
       </form>
     </section>
-  )
+  );
 }

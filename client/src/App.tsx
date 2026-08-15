@@ -1,13 +1,13 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
-import { useAuth } from './auth/useAuth'
-import { ProtectedRoute } from './auth/ProtectedRoute'
-import { LoginPage } from './pages/LoginPage'
-import { WelcomePage } from './pages/WelcomePage'
-import './App.css'
+import { Navigate, Route, Routes } from "react-router-dom";
+import { useAuth } from "./auth/useAuth";
+import { ProtectedRoute } from "./auth/ProtectedRoute";
+import { LoginPage } from "./pages/LoginPage";
+import { WelcomePage } from "./pages/WelcomePage";
+import "./App.css";
 
 function IndexRedirect() {
-  const { isAuthenticated } = useAuth()
-  return <Navigate to={isAuthenticated ? '/welcome' : '/login'} replace />
+  const { isAuthenticated } = useAuth();
+  return <Navigate to={isAuthenticated ? "/welcome" : "/login"} replace />;
 }
 
 function App() {
@@ -24,7 +24,7 @@ function App() {
         }
       />
     </Routes>
-  )
+  );
 }
 
-export default App
+export default App;

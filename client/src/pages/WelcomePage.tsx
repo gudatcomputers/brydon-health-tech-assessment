@@ -1,13 +1,13 @@
-import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../auth/useAuth'
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../auth/useAuth";
 
 export function WelcomePage() {
-  const { logout } = useAuth()
-  const navigate = useNavigate()
+  const { logout } = useAuth();
+  const navigate = useNavigate();
 
   async function handleLogout() {
-    await logout()
-    navigate('/login', { replace: true })
+    await logout();
+    navigate("/login", { replace: true });
   }
 
   return (
@@ -18,5 +18,5 @@ export function WelcomePage() {
         Log out
       </button>
     </section>
-  )
+  );
 }

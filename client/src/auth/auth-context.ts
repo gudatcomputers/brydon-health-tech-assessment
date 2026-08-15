@@ -1,4 +1,4 @@
-import { createContext } from 'react'
+import { createContext } from "react";
 
 export interface AuthContextValue {
   token: string | null
@@ -7,4 +7,4 @@ export interface AuthContextValue {
   logout: () => Promise<void>
 }
 
-export const AuthContext = createContext<AuthContextValue | undefined>(undefined)
+export const AuthContext = createContext<AuthContextValue | undefined>(undefined);
