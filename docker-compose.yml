@@ -1,5 +1,5 @@
 services:
-  postgres:
+  single_tenant_postgres:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
@@ -9,12 +9,30 @@ services:
     ports:
       - "${DB_PORT:-5433}:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - single_tenant_postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-brydon} -d ${DB_NAME:-brydon}"]
       interval: 5s
       timeout: 5s
       retries: 10
 
+  patient_portal_postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${PATIENT_PORTAL_DB_USER:-patient_portal}
+      POSTGRES_PASSWORD: ${PATIENT_PORTAL_DB_PASSWORD:-patient_portal}
+      POSTGRES_DB: ${PATIENT_PORTAL_DB_NAME:-patient_portal}
+    ports:
+      - "${PATIENT_PORTAL_DB_PORT:-5434}:5432"
+    volumes:
+      - patient_portal_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PATIENT_PORTAL_DB_USER:-patient_portal} -d ${PATIENT_PORTAL_DB_NAME:-patient_portal}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
 volumes:
-  postgres_data:
+  single_tenant_postgres_data:
+  patient_portal_postgres_data:

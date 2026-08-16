@@ -14,9 +14,9 @@
   "author": "gudatcomputers",
   "type": "commonjs",
   "scripts": {
-    "start:client": "cd client && npm run dev",
-    "start:server": "cd server && dotnet run",
-    "start:db": "docker compose up -d postgres",
+    "start:client": "cd single-tenant/client && npm run dev",
+    "start:server": "cd single-tenant/server && dotnet run",
+    "start:db": "docker compose up -d",
     "stop:db": "docker compose down",
     "test": "",
     "test:client": "",

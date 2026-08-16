@@ -1,4 +1,4 @@
-﻿{
+{
   "$schema": "https://json.schemastore.org/launchsettings.json",
   "profiles": {
     "http": {
@@ -7,7 +7,13 @@
       "launchBrowser": false,
       "applicationUrl": "http://localhost:5009",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "PATIENT_PORTAL_DB_HOST": "localhost",
+        "PATIENT_PORTAL_DB_PORT": "5434",
+        "PATIENT_PORTAL_DB_NAME": "patient_portal",
+        "PATIENT_PORTAL_DB_USER": "patient_portal",
+        "PATIENT_PORTAL_DB_PASSWORD": "patient_portal",
+        "TENANT_REPORT_SECRET": "dev-only-shared-secret-replace-before-deploying"
       }
     },
     "https": {
@@ -16,7 +22,13 @@
       "launchBrowser": false,
       "applicationUrl": "https://localhost:7219;http://localhost:5009",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "PATIENT_PORTAL_DB_HOST": "localhost",
+        "PATIENT_PORTAL_DB_PORT": "5434",
+        "PATIENT_PORTAL_DB_NAME": "patient_portal",
+        "PATIENT_PORTAL_DB_USER": "patient_portal",
+        "PATIENT_PORTAL_DB_PASSWORD": "patient_portal",
+        "TENANT_REPORT_SECRET": "dev-only-shared-secret-replace-before-deploying"
       }
     }
   }
