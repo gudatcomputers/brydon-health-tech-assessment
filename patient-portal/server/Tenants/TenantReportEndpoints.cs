@@ -36,14 +36,19 @@ public static class TenantReportEndpoints
             // is saved (and any resulting unique-violation swallowed) one at
             // a time — a shared row either one of us inserts is fine, and a
             // failed insert can't take unrelated new hashes down with it.
+            var incomingHashes = request.UsernameHashes.Distinct().ToList();
+
+            // Bounded by the incoming batch, not the tenant's total user
+            // count — a report from a large tenant shouldn't pull its whole
+            // existing hash set into memory just to diff against it.
             var existingHashes = await db.TenantUsernames
-                .Where(t => t.Subdomain == request.Subdomain)
+                .Where(t => t.Subdomain == request.Subdomain && incomingHashes.Contains(t.UsernameHash))
                 .Select(t => t.UsernameHash)
                 .ToListAsync();
 
-            var newHashes = request.UsernameHashes.Distinct().Except(existingHashes);
+            var hashesToAdd = incomingHashes.Except(existingHashes);
 
-            foreach (var hash in newHashes)
+            foreach (var hash in hashesToAdd)
             {
                 var entry = db.TenantUsernames.Add(new TenantUsername { Subdomain = request.Subdomain, UsernameHash = hash });
 
