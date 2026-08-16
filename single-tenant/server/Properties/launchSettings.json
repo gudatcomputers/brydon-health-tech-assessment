@@ -1,4 +1,4 @@
-﻿{
+{
   "$schema": "https://json.schemastore.org/launchsettings.json",
   "profiles": {
     "http": {
@@ -12,7 +12,9 @@
         "DB_PORT": "5433",
         "DB_NAME": "brydon",
         "DB_USER": "brydon",
-        "DB_PASSWORD": "brydon"
+        "DB_PASSWORD": "brydon",
+        "PATIENT_PORTAL_URL": "http://localhost:5009",
+        "TENANT_REPORT_SECRET": "dev-only-shared-secret-replace-before-deploying"
       }
     },
     "https": {
@@ -26,7 +28,9 @@
         "DB_PORT": "5433",
         "DB_NAME": "brydon",
         "DB_USER": "brydon",
-        "DB_PASSWORD": "brydon"
+        "DB_PASSWORD": "brydon",
+        "PATIENT_PORTAL_URL": "http://localhost:5009",
+        "TENANT_REPORT_SECRET": "dev-only-shared-secret-replace-before-deploying"
       }
     }
   }
