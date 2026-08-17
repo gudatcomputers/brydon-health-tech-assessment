@@ -31,7 +31,9 @@ builder.Services.AddScoped<UserStore>();
 builder.Services.AddSingleton<TokenService>();
 
 builder.Services.AddSingleton(PatientPortalReportingOptions.FromConfiguration(builder.Configuration));
-builder.Services.AddHttpClient<PatientPortalReportingService>();
+builder.Services.AddHttpClient<PatientPortalReportingService>()
+    .AddPolicyHandler(PatientPortalRetryPolicy.Retry())
+    .AddPolicyHandler(PatientPortalRetryPolicy.CircuitBreaker());
 builder.Services.AddHostedService<TenantUserSyncHostedService>();
 
 builder.Services
