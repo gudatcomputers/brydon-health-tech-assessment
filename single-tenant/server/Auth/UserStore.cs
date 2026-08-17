@@ -8,6 +8,21 @@ public class UserStore(AppDbContext db)
     public Task<User?> FindByUsernameAsync(string username) =>
         db.Users.FirstOrDefaultAsync(u => u.Username.ToLower() == username.ToLower());
 
+    public async Task<User> CreateAsync(string username, string passwordHash)
+    {
+        var user = new User
+        {
+            Id = Guid.NewGuid(),
+            Username = username,
+            PasswordHash = passwordHash
+        };
+
+        db.Users.Add(user);
+        await db.SaveChangesAsync();
+
+        return user;
+    }
+
     public Task<int?> GetTokenVersionAsync(Guid id) =>
         db.Users.Where(u => u.Id == id).Select(u => (int?)u.TokenVersion).FirstOrDefaultAsync();
 

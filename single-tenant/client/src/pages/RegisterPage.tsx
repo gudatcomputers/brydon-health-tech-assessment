@@ -2,12 +2,12 @@ import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/useAuth";
 
-export function LoginPage() {
+export function RegisterPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { login } = useAuth();
+  const { register } = useAuth();
   const navigate = useNavigate();
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -16,7 +16,7 @@ export function LoginPage() {
     setIsSubmitting(true);
 
     try {
-      await login(username, password);
+      await register(username, password);
       navigate("/welcome", { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong, please try again");
@@ -27,7 +27,7 @@ export function LoginPage() {
 
   return (
     <section className="auth-page">
-      <h1>Sign in</h1>
+      <h1>Create an account</h1>
       <form onSubmit={handleSubmit}>
         <label htmlFor="username">Username</label>
         <input
@@ -44,7 +44,8 @@ export function LoginPage() {
           id="password"
           name="password"
           type="password"
-          autoComplete="current-password"
+          autoComplete="new-password"
+          minLength={8}
           value={password}
           onChange={(event) => setPassword(event.target.value)}
           required
@@ -57,11 +58,11 @@ export function LoginPage() {
         )}
 
         <button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Signing in…" : "Sign in"}
+          {isSubmitting ? "Creating account…" : "Create account"}
         </button>
       </form>
       <p className="auth-switch">
-        Don't have an account? <Link to="/register">Register</Link>
+        Already have an account? <Link to="/login">Sign in</Link>
       </p>
     </section>
   );

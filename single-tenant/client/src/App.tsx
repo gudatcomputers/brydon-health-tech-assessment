@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { useAuth } from "./auth/useAuth";
 import { ProtectedRoute } from "./auth/ProtectedRoute";
 import { LoginPage } from "./pages/LoginPage";
+import { RegisterPage } from "./pages/RegisterPage";
 import { WelcomePage } from "./pages/WelcomePage";
 import "./App.css";
 
@@ -15,6 +16,7 @@ function App() {
     <Routes>
       <Route path="/" element={<IndexRedirect />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
       <Route
         path="/welcome"
         element={

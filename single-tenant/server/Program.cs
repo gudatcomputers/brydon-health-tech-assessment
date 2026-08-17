@@ -34,6 +34,7 @@ builder.Services.AddSingleton(PatientPortalReportingOptions.FromConfiguration(bu
 builder.Services.AddHttpClient<PatientPortalReportingService>()
     .AddPolicyHandler(PatientPortalRetryPolicy.Retry())
     .AddPolicyHandler(PatientPortalRetryPolicy.CircuitBreaker());
+builder.Services.AddSingleton<TenantUserSyncTrigger>();
 builder.Services.AddHostedService<TenantUserSyncHostedService>();
 
 builder.Services
