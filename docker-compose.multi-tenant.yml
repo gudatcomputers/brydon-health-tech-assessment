@@ -1,0 +1,198 @@
+# Simulates multi-tenancy: 5 independent single-tenant client/server pairs,
+# each on its own subdomain, all reporting their (hashed) users to one
+# patient-portal instance. Entirely separate from docker-compose.yml (this
+# file uses its own Postgres, its own ports, its own volume) so both can
+# exist without colliding.
+#
+# Usage:
+#   docker compose -f docker-compose.multi-tenant.yml up --build
+#
+# Once every tenant-server is up, check patient-portal's directory:
+#   docker compose -f docker-compose.multi-tenant.yml exec postgres \
+#     psql -U simuser -d patient_portal -c \
+#     'SELECT "Subdomain", count(*) FROM tenant_usernames GROUP BY "Subdomain"'
+
+x-tenant-server-env: &tenant-server-env
+  ASPNETCORE_ENVIRONMENT: Development
+  DB_HOST: postgres
+  DB_PORT: "5432"
+  DB_USER: simuser
+  DB_PASSWORD: simpass
+  APP_DOMAIN: simulation.local
+  PATIENT_PORTAL_URL: http://patient-portal-server:8080
+  TENANT_REPORT_SECRET: dev-only-shared-secret-replace-before-deploying
+  SEED_RANDOM_USER_COUNT: "15"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: simuser
+      POSTGRES_PASSWORD: simpass
+    ports:
+      - "5540:5432"
+    volumes:
+      - multi_tenant_postgres_data:/var/lib/postgresql/data
+      - ./db-init/multi-tenant-init.sql:/docker-entrypoint-initdb.d/multi-tenant-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U simuser"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  patient-portal-server:
+    build:
+      context: ./patient-portal/server
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      PATIENT_PORTAL_DB_HOST: postgres
+      PATIENT_PORTAL_DB_PORT: "5432"
+      PATIENT_PORTAL_DB_NAME: patient_portal
+      PATIENT_PORTAL_DB_USER: simuser
+      PATIENT_PORTAL_DB_PASSWORD: simpass
+      TENANT_REPORT_SECRET: dev-only-shared-secret-replace-before-deploying
+    ports:
+      - "5590:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  tenant1-server:
+    build:
+      context: ./single-tenant/server
+    restart: unless-stopped
+    environment:
+      <<: *tenant-server-env
+      DB_NAME: tenant1
+      SUBDOMAIN: tenant1
+      CLIENT_ORIGIN: http://localhost:5401
+    ports:
+      - "5301:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      patient-portal-server:
+        condition: service_healthy
+
+  tenant1-client:
+    build:
+      context: ./single-tenant/client
+      args:
+        VITE_API_BASE_URL: http://localhost:5301
+    ports:
+      - "5401:80"
+    depends_on:
+      - tenant1-server
+
+  tenant2-server:
+    build:
+      context: ./single-tenant/server
+    restart: unless-stopped
+    environment:
+      <<: *tenant-server-env
+      DB_NAME: tenant2
+      SUBDOMAIN: tenant2
+      CLIENT_ORIGIN: http://localhost:5402
+    ports:
+      - "5302:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      patient-portal-server:
+        condition: service_healthy
+
+  tenant2-client:
+    build:
+      context: ./single-tenant/client
+      args:
+        VITE_API_BASE_URL: http://localhost:5302
+    ports:
+      - "5402:80"
+    depends_on:
+      - tenant2-server
+
+  tenant3-server:
+    build:
+      context: ./single-tenant/server
+    restart: unless-stopped
+    environment:
+      <<: *tenant-server-env
+      DB_NAME: tenant3
+      SUBDOMAIN: tenant3
+      CLIENT_ORIGIN: http://localhost:5403
+    ports:
+      - "5303:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      patient-portal-server:
+        condition: service_healthy
+
+  tenant3-client:
+    build:
+      context: ./single-tenant/client
+      args:
+        VITE_API_BASE_URL: http://localhost:5303
+    ports:
+      - "5403:80"
+    depends_on:
+      - tenant3-server
+
+  tenant4-server:
+    build:
+      context: ./single-tenant/server
+    restart: unless-stopped
+    environment:
+      <<: *tenant-server-env
+      DB_NAME: tenant4
+      SUBDOMAIN: tenant4
+      CLIENT_ORIGIN: http://localhost:5404
+    ports:
+      - "5304:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      patient-portal-server:
+        condition: service_healthy
+
+  tenant4-client:
+    build:
+      context: ./single-tenant/client
+      args:
+        VITE_API_BASE_URL: http://localhost:5304
+    ports:
+      - "5404:80"
+    depends_on:
+      - tenant4-server
+
+  tenant5-server:
+    build:
+      context: ./single-tenant/server
+    restart: unless-stopped
+    environment:
+      <<: *tenant-server-env
+      DB_NAME: tenant5
+      SUBDOMAIN: tenant5
+      CLIENT_ORIGIN: http://localhost:5405
+    ports:
+      - "5305:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      patient-portal-server:
+        condition: service_healthy
+
+  tenant5-client:
+    build:
+      context: ./single-tenant/client
+      args:
+        VITE_API_BASE_URL: http://localhost:5305
+    ports:
+      - "5405:80"
+    depends_on:
+      - tenant5-server
+
+volumes:
+  multi_tenant_postgres_data:
