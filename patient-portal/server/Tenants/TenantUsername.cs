@@ -5,6 +5,8 @@ namespace PatientPortalServer.Tenants;
 // be a patient at more than one provider office).
 public class TenantUsername
 {
-    public required string Subdomain { get; set; }
+    public required int SubdomainId { get; set; }
     public required string UsernameHash { get; set; }
+
+    public Subdomain? Subdomain { get; set; }
 }

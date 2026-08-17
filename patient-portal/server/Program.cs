@@ -12,6 +12,7 @@ var dbCredentials = DatabaseCredentials.FromConfiguration(builder.Configuration)
 builder.Services.AddDbContext<PatientPortalDbContext>(options => options.UseNpgsql(dbCredentials.ConnectionString));
 
 builder.Services.AddSingleton(TenantReportSecret.FromConfiguration(builder.Configuration));
+builder.Services.AddScoped<SubdomainStore>();
 
 var app = builder.Build();
 

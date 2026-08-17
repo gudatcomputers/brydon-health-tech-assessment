@@ -18,6 +18,7 @@ public static class TenantReportEndpoints
             TenantReportRequest request,
             HttpRequest httpRequest,
             TenantReportSecret secret,
+            SubdomainStore subdomainStore,
             PatientPortalDbContext db) =>
         {
             if (!IsAuthorized(httpRequest, secret))
@@ -29,6 +30,8 @@ public static class TenantReportEndpoints
             {
                 return Results.BadRequest();
             }
+
+            var subdomainId = await subdomainStore.GetOrCreateIdAsync(request.Subdomain);
 
             // Additive only: insert (subdomain, hash) pairs that don't already
             // exist, nothing is ever removed. The existence check can still
@@ -42,7 +45,7 @@ public static class TenantReportEndpoints
             // count — a report from a large tenant shouldn't pull its whole
             // existing hash set into memory just to diff against it.
             var existingHashes = await db.TenantUsernames
-                .Where(t => t.Subdomain == request.Subdomain && incomingHashes.Contains(t.UsernameHash))
+                .Where(t => t.SubdomainId == subdomainId && incomingHashes.Contains(t.UsernameHash))
                 .Select(t => t.UsernameHash)
                 .ToListAsync();
 
@@ -50,7 +53,7 @@ public static class TenantReportEndpoints
 
             foreach (var hash in hashesToAdd)
             {
-                var entry = db.TenantUsernames.Add(new TenantUsername { Subdomain = request.Subdomain, UsernameHash = hash });
+                var entry = db.TenantUsernames.Add(new TenantUsername { SubdomainId = subdomainId, UsernameHash = hash });
 
                 try
                 {
