@@ -26,27 +26,34 @@ namespace BrydonServer.Data.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("password_hash");
 
-                    b.Property<bool>("ReportedToPatientPortal")
-                        .HasColumnType("boolean");
+                    b.Property<bool>("ReportedToTenantRouter")
+                        .HasColumnType("boolean")
+                        .HasColumnName("reported_to_tenant_router");
 
                     b.Property<int>("TokenVersion")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("token_version");
 
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("username");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_users");
 
                     b.HasIndex("Username")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("ix_users_username");
 
                     b.ToTable("users", (string)null);
                 });

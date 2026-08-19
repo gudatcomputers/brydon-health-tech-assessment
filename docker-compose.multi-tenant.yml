@@ -1,16 +1,21 @@
 # Simulates multi-tenancy: 5 independent single-tenant client/server pairs,
-# each on its own subdomain, all reporting their (hashed) users to one
-# patient-portal instance. Entirely separate from docker-compose.yml (this
-# file uses its own Postgres, its own ports, its own volume) so both can
-# exist without colliding.
+# each on its own subdomain, all reporting their (hashed) users to one shared
+# tenant-router, which patient-portal calls to resolve logins. Entirely
+# separate from docker-compose.yml (this file uses its own Postgres, its own
+# ports, its own volume) so both can exist without colliding.
 #
 # Usage:
 #   docker compose -f docker-compose.multi-tenant.yml up --build
 #
-# Once every tenant-server is up, check patient-portal's directory:
+# Once every tenant-server is up, check tenant-router's directory:
 #   docker compose -f docker-compose.multi-tenant.yml exec postgres \
-#     psql -U simuser -d patient_portal -c \
-#     'SELECT "Subdomain", count(*) FROM tenant_usernames GROUP BY "Subdomain"'
+#     psql -U simuser -d tenant_router -c \
+#     'SELECT s."Name", count(*) FROM tenant_usernames t
+#      JOIN subdomains s ON s."Id" = t."SubdomainId" GROUP BY s."Name"'
+#
+# patient-portal-client (http://localhost:5591) has the 2-step login flow —
+# username first, then password, routed to whichever tenant(s) that username
+# was reported under.
 
 x-tenant-server-env: &tenant-server-env
   ASPNETCORE_ENVIRONMENT: Development
@@ -19,7 +24,7 @@ x-tenant-server-env: &tenant-server-env
   DB_USER: simuser
   DB_PASSWORD: simpass
   APP_DOMAIN: simulation.local
-  PATIENT_PORTAL_URL: http://patient-portal-server:8080
+  TENANT_ROUTER_URL: http://tenant-router:8080
   TENANT_REPORT_SECRET: dev-only-shared-secret-replace-before-deploying
   SEED_RANDOM_USER_COUNT: "15"
 
@@ -41,23 +46,48 @@ services:
       timeout: 3s
       retries: 10
 
+  tenant-router:
+    build:
+      context: ./tenant-router
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      TENANT_ROUTER_DB_HOST: postgres
+      TENANT_ROUTER_DB_PORT: "5432"
+      TENANT_ROUTER_DB_NAME: tenant_router
+      TENANT_ROUTER_DB_USER: simuser
+      TENANT_ROUTER_DB_PASSWORD: simpass
+      TENANT_REPORT_SECRET: dev-only-shared-secret-replace-before-deploying
+    ports:
+      - "5595:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   patient-portal-server:
     build:
       context: ./patient-portal/server
     restart: unless-stopped
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      PATIENT_PORTAL_DB_HOST: postgres
-      PATIENT_PORTAL_DB_PORT: "5432"
-      PATIENT_PORTAL_DB_NAME: patient_portal
-      PATIENT_PORTAL_DB_USER: simuser
-      PATIENT_PORTAL_DB_PASSWORD: simpass
+      TENANT_ROUTER_URL: http://tenant-router:8080
       TENANT_REPORT_SECRET: dev-only-shared-secret-replace-before-deploying
+      CLIENT_ORIGIN: http://localhost:5591
     ports:
       - "5590:8080"
     depends_on:
-      postgres:
+      tenant-router:
         condition: service_healthy
+
+  patient-portal-client:
+    build:
+      context: ./patient-portal/client
+      args:
+        VITE_API_BASE_URL: http://localhost:5590
+    ports:
+      - "5591:80"
+    depends_on:
+      - patient-portal-server
 
   tenant1-server:
     build:
@@ -67,13 +97,14 @@ services:
       <<: *tenant-server-env
       DB_NAME: tenant1
       SUBDOMAIN: tenant1
+      SELF_URL: http://tenant1-server:8080
       CLIENT_ORIGIN: http://localhost:5401
     ports:
       - "5301:8080"
     depends_on:
       postgres:
         condition: service_healthy
-      patient-portal-server:
+      tenant-router:
         condition: service_healthy
 
   tenant1-client:
@@ -94,13 +125,14 @@ services:
       <<: *tenant-server-env
       DB_NAME: tenant2
       SUBDOMAIN: tenant2
+      SELF_URL: http://tenant2-server:8080
       CLIENT_ORIGIN: http://localhost:5402
     ports:
       - "5302:8080"
     depends_on:
       postgres:
         condition: service_healthy
-      patient-portal-server:
+      tenant-router:
         condition: service_healthy
 
   tenant2-client:
@@ -121,13 +153,14 @@ services:
       <<: *tenant-server-env
       DB_NAME: tenant3
       SUBDOMAIN: tenant3
+      SELF_URL: http://tenant3-server:8080
       CLIENT_ORIGIN: http://localhost:5403
     ports:
       - "5303:8080"
     depends_on:
       postgres:
         condition: service_healthy
-      patient-portal-server:
+      tenant-router:
         condition: service_healthy
 
   tenant3-client:
@@ -148,13 +181,14 @@ services:
       <<: *tenant-server-env
       DB_NAME: tenant4
       SUBDOMAIN: tenant4
+      SELF_URL: http://tenant4-server:8080
       CLIENT_ORIGIN: http://localhost:5404
     ports:
       - "5304:8080"
     depends_on:
       postgres:
         condition: service_healthy
-      patient-portal-server:
+      tenant-router:
         condition: service_healthy
 
   tenant4-client:
@@ -175,13 +209,14 @@ services:
       <<: *tenant-server-env
       DB_NAME: tenant5
       SUBDOMAIN: tenant5
+      SELF_URL: http://tenant5-server:8080
       CLIENT_ORIGIN: http://localhost:5405
     ports:
       - "5305:8080"
     depends_on:
       postgres:
         condition: service_healthy
-      patient-portal-server:
+      tenant-router:
         condition: service_healthy
 
   tenant5-client:

@@ -1,0 +1,6 @@
+@TenantRouter_HostAddress = http://localhost:5236
+
+GET {{TenantRouter_HostAddress}}/health
+Accept: application/json
+
+###

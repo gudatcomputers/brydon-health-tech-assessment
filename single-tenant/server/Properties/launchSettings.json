@@ -13,7 +13,7 @@
         "DB_NAME": "brydon",
         "DB_USER": "brydon",
         "DB_PASSWORD": "brydon",
-        "PATIENT_PORTAL_URL": "http://localhost:5009",
+        "TENANT_ROUTER_URL": "http://localhost:5236",
         "TENANT_REPORT_SECRET": "dev-only-shared-secret-replace-before-deploying"
       }
     },
@@ -29,7 +29,7 @@
         "DB_NAME": "brydon",
         "DB_USER": "brydon",
         "DB_PASSWORD": "brydon",
-        "PATIENT_PORTAL_URL": "http://localhost:5009",
+        "TENANT_ROUTER_URL": "http://localhost:5236",
         "TENANT_REPORT_SECRET": "dev-only-shared-secret-replace-before-deploying"
       }
     }

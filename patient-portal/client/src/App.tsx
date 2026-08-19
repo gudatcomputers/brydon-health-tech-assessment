@@ -1,11 +1,13 @@
+import { Route, Routes } from "react-router-dom";
+import { LoginPage } from "./pages/LoginPage";
 import "./App.css";
 
 function App() {
   return (
-    <section id="placeholder">
-      <h1>Patient Portal</h1>
-      <p>Coming soon.</p>
-    </section>
+    <Routes>
+      <Route path="/" element={<LoginPage />} />
+      <Route path="/login" element={<LoginPage />} />
+    </Routes>
   );
 }
 

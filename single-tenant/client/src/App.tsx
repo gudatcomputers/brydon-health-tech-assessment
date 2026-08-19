@@ -4,6 +4,7 @@ import { ProtectedRoute } from "./auth/ProtectedRoute";
 import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
 import { WelcomePage } from "./pages/WelcomePage";
+import { HandoffPage } from "./pages/HandoffPage";
 import "./App.css";
 
 function IndexRedirect() {
@@ -17,6 +18,7 @@ function App() {
       <Route path="/" element={<IndexRedirect />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/handoff" element={<HandoffPage />} />
       <Route
         path="/welcome"
         element={

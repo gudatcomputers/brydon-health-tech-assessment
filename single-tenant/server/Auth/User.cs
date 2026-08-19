@@ -11,6 +11,6 @@ public class User
     public int TokenVersion { get; set; }
 
     // Whether this user's hashed username has been included in a successful
-    // report to patient-portal's /api/tenants/report.
-    public bool ReportedToPatientPortal { get; set; }
+    // report to tenant-router's /api/tenants/report.
+    public bool ReportedToTenantRouter { get; set; }
 }

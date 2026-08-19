@@ -1,4 +1,4 @@
-#placeholder {
+.auth-page {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -6,4 +6,92 @@
   flex-grow: 1;
   gap: 16px;
   padding: 32px 20px;
+}
+
+.auth-page form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 320px;
+  text-align: left;
+}
+
+.auth-page label {
+  font-size: 14px;
+  color: var(--text-h);
+}
+
+.auth-page input {
+  font: inherit;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+  margin-bottom: 8px;
+}
+
+.auth-page input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.auth-page button {
+  font: inherit;
+  font-size: 16px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  color: var(--accent);
+  background: var(--accent-bg);
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: border-color 0.3s;
+}
+
+.auth-page button:hover {
+  border-color: var(--accent-border);
+}
+
+.auth-page button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.auth-page .auth-back {
+  color: var(--text);
+  background: transparent;
+}
+
+.auth-identity {
+  font-size: 14px;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.auth-subdomain-picker {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+}
+
+.auth-subdomain-picker legend {
+  font-size: 14px;
+  color: var(--text-h);
+  padding: 0 4px;
+}
+
+.auth-subdomain-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  padding: 4px 0;
+}
+
+.auth-error {
+  color: #d3455b;
+  font-size: 14px;
+  margin-bottom: 4px;
 }

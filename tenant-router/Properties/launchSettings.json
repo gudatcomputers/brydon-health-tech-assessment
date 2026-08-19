@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "http": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": false,
+      "applicationUrl": "http://localhost:5236",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "TENANT_ROUTER_DB_HOST": "localhost",
+        "TENANT_ROUTER_DB_PORT": "5435",
+        "TENANT_ROUTER_DB_NAME": "tenant_router",
+        "TENANT_ROUTER_DB_USER": "tenant_router",
+        "TENANT_ROUTER_DB_PASSWORD": "tenant_router",
+        "TENANT_REPORT_SECRET": "dev-only-shared-secret-replace-before-deploying"
+      }
+    },
+    "https": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": false,
+      "applicationUrl": "https://localhost:7209;http://localhost:5236",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "TENANT_ROUTER_DB_HOST": "localhost",
+        "TENANT_ROUTER_DB_PORT": "5435",
+        "TENANT_ROUTER_DB_NAME": "tenant_router",
+        "TENANT_ROUTER_DB_USER": "tenant_router",
+        "TENANT_ROUTER_DB_PASSWORD": "tenant_router",
+        "TENANT_REPORT_SECRET": "dev-only-shared-secret-replace-before-deploying"
+      }
+    }
+  }
+}

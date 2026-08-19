@@ -32,9 +32,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [token]);
 
+  // Accepts a token that was already verified elsewhere — patient-portal
+  // proxying a login to this tenant, then handing the browser off with the
+  // resulting token. No credentials involved, so no API call here, just the
+  // same storage/state update login() does after its own call succeeds.
+  const acceptToken = useCallback((newToken: string) => {
+    localStorage.setItem(TOKEN_STORAGE_KEY, newToken);
+    setToken(newToken);
+  }, []);
+
   const value = useMemo<AuthContextValue>(
-    () => ({ token, isAuthenticated: token !== null, login, register, logout }),
-    [token, login, register, logout],
+    () => ({ token, isAuthenticated: token !== null, login, register, logout, acceptToken }),
+    [token, login, register, logout, acceptToken],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

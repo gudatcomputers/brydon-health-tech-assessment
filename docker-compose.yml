@@ -16,23 +16,25 @@ services:
       timeout: 5s
       retries: 10
 
-  patient_portal_postgres:
+  # patient-portal/server has no database of its own — the tenant directory
+  # (subdomains + hashed usernames) lives in tenant-router instead.
+  tenant_router_postgres:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${PATIENT_PORTAL_DB_USER:-patient_portal}
-      POSTGRES_PASSWORD: ${PATIENT_PORTAL_DB_PASSWORD:-patient_portal}
-      POSTGRES_DB: ${PATIENT_PORTAL_DB_NAME:-patient_portal}
+      POSTGRES_USER: ${TENANT_ROUTER_DB_USER:-tenant_router}
+      POSTGRES_PASSWORD: ${TENANT_ROUTER_DB_PASSWORD:-tenant_router}
+      POSTGRES_DB: ${TENANT_ROUTER_DB_NAME:-tenant_router}
     ports:
-      - "${PATIENT_PORTAL_DB_PORT:-5434}:5432"
+      - "${TENANT_ROUTER_DB_PORT:-5435}:5432"
     volumes:
-      - patient_portal_postgres_data:/var/lib/postgresql/data
+      - tenant_router_postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${PATIENT_PORTAL_DB_USER:-patient_portal} -d ${PATIENT_PORTAL_DB_NAME:-patient_portal}"]
+      test: ["CMD-SHELL", "pg_isready -U ${TENANT_ROUTER_DB_USER:-tenant_router} -d ${TENANT_ROUTER_DB_NAME:-tenant_router}"]
       interval: 5s
       timeout: 5s
       retries: 10
 
 volumes:
   single_tenant_postgres_data:
-  patient_portal_postgres_data:
+  tenant_router_postgres_data:

@@ -18,6 +18,7 @@
     "start:server": "cd single-tenant/server && dotnet run",
     "start:db": "docker compose up -d",
     "stop:db": "docker compose down",
+    "build:docker": "docker compose -f docker-compose.multi-tenant.yml build",
     "test": "",
     "test:client": "",
     "test:server": ""

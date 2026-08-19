@@ -1,0 +1,87 @@
+using System.Security.Cryptography;
+using System.Text;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
+using TenantRouter.Data;
+
+namespace TenantRouter.Tenants;
+
+public record TenantReportRequest(string Subdomain, string ServerUrl, string ClientOrigin, List<string> UsernameHashes);
+
+public static class TenantReportEndpoints
+{
+    private const string SecretHeaderName = "X-Tenant-Report-Key";
+
+    public static void MapTenantReportEndpoints(this WebApplication app)
+    {
+        app.MapPost("/api/tenants/report", async (
+            TenantReportRequest request,
+            HttpRequest httpRequest,
+            TenantReportSecret secret,
+            SubdomainStore subdomainStore,
+            TenantRouterDbContext db) =>
+        {
+            if (!IsAuthorized(httpRequest, secret))
+            {
+                return Results.Unauthorized();
+            }
+
+            if (string.IsNullOrWhiteSpace(request.Subdomain) || string.IsNullOrWhiteSpace(request.ServerUrl) ||
+                string.IsNullOrWhiteSpace(request.ClientOrigin) || request.UsernameHashes is null)
+            {
+                return Results.BadRequest();
+            }
+
+            var subdomainId = await subdomainStore.GetOrCreateIdAsync(request.Subdomain, request.ServerUrl, request.ClientOrigin);
+
+            // Additive only: insert (subdomain, hash) pairs that don't already
+            // exist, nothing is ever removed. The existence check can still
+            // race a concurrent report for the same subdomain, so each insert
+            // is saved (and any resulting unique-violation swallowed) one at
+            // a time — a shared row either one of us inserts is fine, and a
+            // failed insert can't take unrelated new hashes down with it.
+            var incomingHashes = request.UsernameHashes.Distinct().ToList();
+
+            // Bounded by the incoming batch, not the tenant's total user
+            // count — a report from a large tenant shouldn't pull its whole
+            // existing hash set into memory just to diff against it.
+            var existingHashes = await db.TenantUsernames
+                .Where(t => t.SubdomainId == subdomainId && incomingHashes.Contains(t.UsernameHash))
+                .Select(t => t.UsernameHash)
+                .ToListAsync();
+
+            var hashesToAdd = incomingHashes.Except(existingHashes);
+
+            foreach (var hash in hashesToAdd)
+            {
+                var entry = db.TenantUsernames.Add(new TenantUsername { SubdomainId = subdomainId, UsernameHash = hash });
+
+                try
+                {
+                    await db.SaveChangesAsync();
+                }
+                catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+                {
+                    entry.State = EntityState.Detached;
+                }
+            }
+
+            return Results.NoContent();
+        })
+        .WithName("ReportTenantUsernames");
+    }
+
+    internal static bool IsAuthorized(HttpRequest request, TenantReportSecret secret)
+    {
+        if (!request.Headers.TryGetValue(SecretHeaderName, out var provided) || provided.Count != 1)
+        {
+            return false;
+        }
+
+        var providedBytes = Encoding.UTF8.GetBytes(provided[0] ?? string.Empty);
+        var expectedBytes = Encoding.UTF8.GetBytes(secret.Value);
+
+        return providedBytes.Length == expectedBytes.Length &&
+            CryptographicOperations.FixedTimeEquals(providedBytes, expectedBytes);
+    }
+}

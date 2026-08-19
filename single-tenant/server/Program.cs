@@ -25,15 +25,16 @@ builder.Services.AddSingleton(deploymentOrigin);
 
 var dbCredentials = DatabaseCredentials.FromConfiguration(builder.Configuration);
 
-builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(dbCredentials.ConnectionString));
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(dbCredentials.ConnectionString).UseSnakeCaseNamingConvention());
 
 builder.Services.AddScoped<UserStore>();
 builder.Services.AddSingleton<TokenService>();
 
-builder.Services.AddSingleton(PatientPortalReportingOptions.FromConfiguration(builder.Configuration));
-builder.Services.AddHttpClient<PatientPortalReportingService>()
-    .AddPolicyHandler(PatientPortalRetryPolicy.Retry())
-    .AddPolicyHandler(PatientPortalRetryPolicy.CircuitBreaker());
+builder.Services.AddSingleton(TenantRouterReportingOptions.FromConfiguration(builder.Configuration));
+builder.Services.AddHttpClient<TenantRouterReportingService>()
+    .AddPolicyHandler(TenantRouterRetryPolicy.Retry())
+    .AddPolicyHandler(TenantRouterRetryPolicy.CircuitBreaker());
 builder.Services.AddSingleton<TenantUserSyncTrigger>();
 builder.Services.AddHostedService<TenantUserSyncHostedService>();
 
@@ -46,8 +47,7 @@ builder.Services.AddAuthorization();
 // In production, client and server share an origin behind a reverse proxy, so
 // this is mainly for local dev where the client runs on a different port. It
 // also always allows the deployment's own origin as a fallback.
-var clientOrigin = builder.Configuration["CLIENT_ORIGIN"] ?? "http://localhost:5173";
-var corsOrigins = new[] { clientOrigin, deploymentOrigin.BaseUrl }.Distinct().ToArray();
+var corsOrigins = new[] { deploymentOrigin.ClientOrigin, deploymentOrigin.BaseUrl }.Distinct().ToArray();
 
 builder.Services.AddCors(options =>
 {
