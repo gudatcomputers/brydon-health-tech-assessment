@@ -1,8 +1,9 @@
 # Simulates multi-tenancy: 5 independent single-tenant client/server pairs,
 # each on its own subdomain, all reporting their (hashed) users to one shared
-# tenant-router, which patient-portal calls to resolve logins. Entirely
-# separate from docker-compose.yml (this file uses its own Postgres, its own
-# ports, its own volume) so both can exist without colliding.
+# tenant-router, which patient-portal and marketing-website both call to
+# resolve logins. Entirely separate from docker-compose.yml (this file uses
+# its own Postgres, its own ports, its own volume) so both can exist without
+# colliding.
 #
 # Usage:
 #   docker compose -f docker-compose.multi-tenant.yml up --build
@@ -13,9 +14,12 @@
 #     'SELECT s."Name", count(*) FROM tenant_usernames t
 #      JOIN subdomains s ON s."Id" = t."SubdomainId" GROUP BY s."Name"'
 #
-# patient-portal-client (http://localhost:5591) has the 2-step login flow —
-# username first, then password, routed to whichever tenant(s) that username
-# was reported under.
+# patient-portal-client (http://localhost:5591) and marketing-website-client
+# (http://localhost:5593) both have the 2-step login flow — username first,
+# then password, routed to whichever tenant(s) that username was reported
+# under. marketing-website has no database of its own and doesn't report
+# anything to tenant-router — it's a second *consumer* of the same lookup
+# patient-portal uses, not a directory owner.
 
 x-tenant-server-env: &tenant-server-env
   ASPNETCORE_ENVIRONMENT: Development
@@ -88,6 +92,33 @@ services:
       - "5591:80"
     depends_on:
       - patient-portal-server
+
+  # No database of its own — same login proxy as patient-portal-server, a
+  # second consumer of tenant-router's /api/tenants/lookup.
+  marketing-website-server:
+    build:
+      context: ./marketing-website/server
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      TENANT_ROUTER_URL: http://tenant-router:8080
+      TENANT_REPORT_SECRET: dev-only-shared-secret-replace-before-deploying
+      CLIENT_ORIGIN: http://localhost:5593
+    ports:
+      - "5592:8080"
+    depends_on:
+      tenant-router:
+        condition: service_healthy
+
+  marketing-website-client:
+    build:
+      context: ./marketing-website/client
+      args:
+        VITE_API_BASE_URL: http://localhost:5592
+    ports:
+      - "5593:80"
+    depends_on:
+      - marketing-website-server
 
   tenant1-server:
     build:
